@@ -1,0 +1,10 @@
+{
+  "folders": [
+    { "name": "🖥 Backend (Spring Boot)", "path": "./server" },
+    { "name": "🌐 Frontend (React)", "path": "./client" },
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "java.compile.nullAnalysis.mode": "automatic",
+  },
+}

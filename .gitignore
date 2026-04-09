@@ -1,0 +1,20 @@
+# ── Java / Spring Boot
+build/
+.gradle/
+*.class
+*.jar
+*.war
+out/
+
+# ── React / Node 
+node_modules/
+dist/
+.env
+.env.local
+
+# ── VSCode 
+.vscode/settings.json
+
+# ── OS 
+.DS_Store
+Thumbs.db

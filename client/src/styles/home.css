@@ -1,0 +1,38 @@
+.home-page {
+  height: 100vh;
+  width: 100vw;
+}
+
+.button-container {
+  margin-top: 2rem;
+}
+
+.home-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.transfer-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background-color: #d97706;
+  color: white;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  border: 2px solid #b45309;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.transfer-button:hover {
+  background-color: #b45309;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.2);
+}

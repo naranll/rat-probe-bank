@@ -1,0 +1,53 @@
+.transfer-page {
+  height: 100vh;
+  width: 100%;
+}
+
+.transfer-card {
+  border: 2px solid #d97706;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  background-color: #fffbeb;
+  margin-top: 1.25rem;
+}
+
+.transfer-info {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.transfer-info h3 {
+  color: #1e293b;
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.transfer-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.transfer-info li {
+  color: #334155;
+  font-size: 0.875rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.transfer-info li:last-child {
+  border-bottom: none;
+}
+
+.transfer-info li::before {
+  content: "•";
+  color: #2563eb;
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
