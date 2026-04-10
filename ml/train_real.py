@@ -1,10 +1,8 @@
 """
-train_real.py — ML training pipeline on real collected session data.
-
 Usage:
     python train_real.py --csv ratprobe_labelled.csv
     python train_real.py --csv ratprobe_labelled.csv --model rf
-    python train_real.py --url http://your-railway-app.railway.app  # pull CSV directly
+    python train_real.py --url backend # pull CSV directly
 
 Scientific basis:
     Feature set: Ahmed & Traore (2007), Shen et al. (2012), Feher et al. (2012)
