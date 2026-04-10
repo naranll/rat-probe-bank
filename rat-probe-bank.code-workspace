@@ -2,6 +2,7 @@
   "folders": [
     { "name": "🖥 Backend (Spring Boot)", "path": "./server" },
     { "name": "🌐 Frontend (React)", "path": "./client" },
+    { "name": "Training", "path": "./ml" },
   ],
   "settings": {
     "editor.formatOnSave": true,
