@@ -48,7 +48,6 @@ export default function Signup() {
       <div style={styles.card}>
         <div style={styles.logo}>⬡</div>
         <h1 style={styles.title}>Create account</h1>
-        <p style={styles.subtitle}>RatProbe Bank — secure by design</p>
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <label style={styles.label}>Username</label>
