@@ -52,7 +52,7 @@ export default function Home() {
     <div style={styles.page}>
       {/* Sidebar */}
       <aside style={styles.sidebar}>
-        <div style={styles.sidebarLogo}>⬡ RPB</div>
+        <div style={styles.sidebarLogo}>⬡ RAT Detection</div>
         <nav style={styles.nav}>
           <div style={{ ...styles.navItem, ...styles.navActive }}>
             Dashboard
@@ -151,20 +151,23 @@ export default function Home() {
 const styles = {
   page: {
     display: "flex",
-    minHeight: "100vh",
+    height: "100vh",
     background: "#0f1117",
     fontFamily: "'IBM Plex Mono', monospace",
     color: "#f0f4ff",
     minWidth: "100vw",
+    overflow: "hidden", //jic
   },
   sidebar: {
     width: "220px",
+    maxHeight: "100vh",
     background: "#161b27",
     borderRight: "1px solid #2a3045",
     display: "flex",
     flexDirection: "column",
     padding: "24px 16px",
     flexShrink: 0,
+    boxSizing: "border-box",
   },
   sidebarLogo: {
     color: "#4ade80",
@@ -189,7 +192,7 @@ const styles = {
   },
   sidebarBottom: {
     borderTop: "1px solid #2a3045",
-    paddingTop: "16px",
+    paddingTop: "10px",
     display: "flex",
     flexDirection: "column",
     gap: "10px",
