@@ -7,17 +7,6 @@ import {
 } from "../util/telemetry";
 import { useNavigate } from "react-router-dom";
 
-/**
- * DataPanel — admin view for collected RAT probe sessions.
- *
- * Features:
- *   - View all sessions with key metrics
- *   - Manually label sessions as "human" or "rat" (ground truth for ML training)
- *   - Export as JSON (full fidelity) or CSV (flattened features for pandas)
- *   - Clear all data
- *
- * Access: navigate to /data  (add route to App.jsx)
- */
 export default function DataPanel() {
   const [sessions, setSessions] = useState(() => loadSessions());
   const [selected, setSelected] = useState(null);

@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * ProbeController — stores and exports behavioral CAPTCHA session data.
- *
  * Endpoints:
  *   POST /probe/session                — save one session from frontend
  *   PATCH /probe/session/{id}/label    — label a session as human/rat
@@ -37,7 +35,7 @@ public class ProbeController {
         this.repo = repo;
     }
 
-    // ── Save session ──────────────────────────────────────────────────────────
+    //  Save session 
 
     @PostMapping("/session")
     public ResponseEntity<Map<String, String>> saveSession(@RequestBody Map<String, Object> body) {
@@ -66,13 +64,17 @@ public class ProbeController {
         s.setIdleBurstMean(dbl(body, "idleBurstMean"));
         s.setTrajPointsMean(dbl(body, "trajPointsMean"));
         s.setArcLengthMean(dbl(body, "arcLengthMean"));
+        s.setDeviceOs(str(body, "deviceOs"));
+        s.setDeviceBrowser(str(body, "deviceBrowser"));
+        s.setScreenResolution(str(body, "screenResolution"));
+        s.setDevicePixelRatio(dbl(body, "devicePixelRatio"));
+        s.setNetworkLatencyMs(intVal(body, "networkLatencyMs"));
 
         repo.save(s);
         return ResponseEntity.ok(Map.of("id", s.getId(), "status", "saved"));
     }
 
-    // ── Label a session ───────────────────────────────────────────────────────
-
+    //  Label a session 
     @PatchMapping("/session/{id}/label")
     public ResponseEntity<Map<String, String>> label(
             @PathVariable String id,
@@ -84,7 +86,7 @@ public class ProbeController {
         return ResponseEntity.ok(Map.of("status", "labelled", "label", body.get("label")));
     }
 
-    // ── Label a session (PUT) ──────────────────────────────────────────────────
+    //  Label a session (PUT) 
     // NEW: Alternative PUT endpoint for labeling
 
     @PutMapping("/session/{id}/label")
@@ -98,7 +100,7 @@ public class ProbeController {
         return ResponseEntity.ok(Map.of("status", "labelled", "label", body.get("label"), "id", id));
     }
 
-    // ── Bulk label sessions ────────────────────────────────────────────────────
+    //  Bulk label sessions 
     // NEW: Bulk label endpoint for fast labeling
 
     @PostMapping("/sessions/bulk-label")
@@ -131,7 +133,7 @@ public class ProbeController {
         ));
     }
 
-    // ── List all sessions ─────────────────────────────────────────────────────
+    //  List all sessions 
     // MODIFIED: Added optional username parameter to get sessions for specific user
 
     @GetMapping("/sessions")
@@ -144,7 +146,7 @@ public class ProbeController {
         return repo.findAllByOrderByTimestampDesc();
     }
 
-    // ── List sessions by label ─────────────────────────────────────────────────
+    //  List sessions by label 
     // NEW: Filter sessions by label
 
     @GetMapping("/sessions/label/{label}")
@@ -156,7 +158,7 @@ public class ProbeController {
         return repo.findByLabelOrderByTimestampDesc(label);
     }
 
-    // ── Stats ─────────────────────────────────────────────────────────────────
+    //  Stats 
 
     @GetMapping("/stats")
     public Map<String, Object> stats() {
@@ -168,7 +170,7 @@ public class ProbeController {
         );
     }
 
-    // ── CSV export (labelled only — for ML training) ──────────────────────────
+    //  CSV export (labelled only — for ML training) 
 
     @GetMapping("/export/csv")
     public ResponseEntity<byte[]> exportCsv() {
@@ -176,7 +178,7 @@ public class ProbeController {
         return buildCsv(sessions, "ratprobe_labelled.csv");
     }
 
-    // ── CSV export (for specific user) ─────────────────────────────────────────
+    //  CSV export (for specific user) 
     // NEW: Export only sessions for a specific user
 
     @GetMapping("/export/csv/user")
@@ -186,7 +188,7 @@ public class ProbeController {
         return buildCsv(sessions, "ratprobe_" + username + ".csv");
     }
 
-    // ── CSV export (all sessions) ─────────────────────────────────────────────
+    //  CSV export (all sessions) 
 
     @GetMapping("/export/full-csv")
     public ResponseEntity<byte[]> exportFullCsv() {
@@ -194,7 +196,7 @@ public class ProbeController {
         return buildCsv(sessions, "ratprobe_all_sessions.csv");
     }
 
-    // ── Build CSV bytes ───────────────────────────────────────────────────────
+    //  Build CSV bytes
 
     private ResponseEntity<byte[]> buildCsv(List<ProbeSession> sessions, String filename) {
         StringBuilder sb = new StringBuilder();
@@ -202,6 +204,7 @@ public class ProbeController {
         // Header row
         sb.append("session_id,username,timestamp,combined_score,ambient_score,captcha_score,")
           .append("label,label_int,flags,")
+          .append("device_os,device_browser,screen_resolution,device_pixel_ratio,network_latency_ms,")
           .append("straightness_mean,straightness_std,")
           .append("dir_entropy_mean,dir_entropy_std,")
           .append("vel_cv_mean,vel_cv_std,vel_std_mean,accel_std_mean,")
@@ -219,9 +222,15 @@ public class ProbeController {
               .append(safe(s.getCaptchaScore())).append(",")
               .append(csv(s.getLabel())).append(",")
               .append("rat".equals(s.getLabel()) ? "1" : ("human".equals(s.getLabel()) ? "0" : "")).append(",")
-              .append(csv(s.getFlags())).append(",")
-              .append(safe(s.getStraightnessMean())).append(",")
-              .append(safe(s.getStraightnessStd())).append(",")
+              .append(csv(s.getFlags())).append(",") //label
+              .append(csv(s.getDeviceOs())).append(",")              // ← NEW
+              .append(csv(s.getDeviceBrowser())).append(",")        // ← NEW
+              .append(csv(s.getScreenResolution())).append(",")     // ← NEW
+              .append(safe(s.getDevicePixelRatio())).append(",")    // ← NEW
+              .append(safe(s.getNetworkLatencyMs())).append(",")    // ← NEW
+
+              .append(safe(s.getStraightnessMean())).append(",") // mouse data go
+              .append(safe(s.getStraightnessStd())).append(",") //
               .append(safe(s.getDirEntropyMean())).append(",")
               .append(safe(s.getDirEntropyStd())).append(",")
               .append(safe(s.getVelCvMean())).append(",")

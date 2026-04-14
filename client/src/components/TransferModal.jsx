@@ -5,10 +5,7 @@ import { saveSession } from "../util/telemetry";
 import CaptchaGame from "./CaptchaGame";
 
 /**
- * TransferModal — 4-step state machine:
- *   form → captcha → ratWarning | sending
- *
- * On CAPTCHA complete: blends ambient probe (35%) + captcha score (65%).
+ * On complete: blends ambient probe (35%) + captcha score (65%).
  * Full session record is saved to localStorage via telemetry.js.
  */
 export default function TransferModal({
@@ -213,7 +210,7 @@ export default function TransferModal({
   );
 }
 
-// ─── Scoring ─────────────────────────────────────────────────────────────────
+// Scoring
 
 function scoreCaptcha(samples) {
   if (!samples?.length) return 0;
@@ -269,7 +266,7 @@ function captchaFlags(samples) {
   return flags;
 }
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
+//  Styles
 const S = {
   overlay: {
     position: "fixed",

@@ -34,12 +34,18 @@ public class ProbeSession {
     // Comma-separated flag names from the probe
     private String flags;
 
-    // Full BehaviorSample[] as JSON — enables re-running feature engineering later
+    // for re-running feature engineering later
     @Lob
     @Column(columnDefinition = "TEXT")
     private String sessionJson;
 
     // Pre-computed scalar features (denormalized for fast ML training queries)
+    // These are just examples - the actual features can be changed as needed.
+    // In a real implementation, you might want to store these in a separate table or as a JSON blob,
+    // especially if there are many features or they change frequently.
+    // Example features - these should match what your ML model expects
+    // (In a real implementation, you would compute these from the sessionJson data)
+
     private Double straightnessMean;
     private Double straightnessStd;
     private Double dirEntropyMean;
@@ -55,12 +61,18 @@ public class ProbeSession {
     private Double idleBurstMean;
     private Double trajPointsMean;
     private Double arcLengthMean;
+    // Desvice and network data
+    private String deviceOs;
+    private String deviceBrowser;
+    private String screenResolution;
+    private Double devicePixelRatio;
+    private Integer networkLatencyMs;
 
     public ProbeSession() {
         this.timestamp = LocalDateTime.now();
     }
 
-    // ── Getters & Setters ─────────────────────────────────────────────────────
+    // ==== Getters & Setters =====
 
     public String getId() { return id; }
 
@@ -132,4 +144,20 @@ public class ProbeSession {
 
     public Double getArcLengthMean() { return arcLengthMean; }
     public void setArcLengthMean(Double v) { this.arcLengthMean = v; }
+
+    public String getDeviceOs() { return deviceOs; }
+    public void setDeviceOs(String deviceOs) { this.deviceOs = deviceOs; }
+
+    public String getDeviceBrowser() { return deviceBrowser; }
+    public void setDeviceBrowser(String deviceBrowser) { this.deviceBrowser = deviceBrowser; }
+
+    public String getScreenResolution() { return screenResolution; }
+    public void setScreenResolution(String screenResolution) { this.screenResolution = screenResolution; }
+
+    public Double getDevicePixelRatio() { return devicePixelRatio; }
+    public void setDevicePixelRatio(Double devicePixelRatio) { this.devicePixelRatio = devicePixelRatio; }
+
+    public Integer getNetworkLatencyMs() { return networkLatencyMs; }
+    public void setNetworkLatencyMs(Integer networkLatencyMs) { this.networkLatencyMs = networkLatencyMs; }
+
 }

@@ -1,30 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import "../styles/game.css";
 
-/**
- * CaptchaGame
- *
- * A behavioral CAPTCHA that:
- * 1. Shows a scene with 6 floating icons
- * 2. Asks the user to click 3 specific icons in order
- * 3. Collects rich mouse telemetry throughout
- * 4. Returns a BehaviorSample on completion/failure for ML inference
- *
- * BehaviorSample schema (per click event):
- * {
- *   trajectory:     [{x, y, t}]   — full path from last position to click
- *   velocity:       [number]       — px/ms per segment
- *   acceleration:   [number]       — Δvelocity per segment
- *   straightness:   number         — chord_length / arc_length (1=straight, <1=curved)
- *   overshoot:      boolean        — cursor went past target then corrected
- *   preDwellMs:     number         — ms cursor hovered near target before click
- *   reactionMs:     number         — ms from prompt change to first movement
- *   missCount:      number         — wrong clicks before this correct one
- *   targetSize:     number         — icon diameter px (normalise difficulty)
- *   targetDist:     number         — px from start position to target center
- * }
- */
-
 const ICONS = [
   { id: "graduation", emoji: "🎓", label: "graduation cap" },
   { id: "calendar", emoji: "📅", label: "calendar" },
