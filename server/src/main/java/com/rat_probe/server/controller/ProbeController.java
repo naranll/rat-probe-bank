@@ -223,11 +223,11 @@ public class ProbeController {
               .append(csv(s.getLabel())).append(",")
               .append("rat".equals(s.getLabel()) ? "1" : ("human".equals(s.getLabel()) ? "0" : "")).append(",")
               .append(csv(s.getFlags())).append(",") //label
-              .append(csv(s.getDeviceOs())).append(",")              // ← NEW
-              .append(csv(s.getDeviceBrowser())).append(",")        // ← NEW
-              .append(csv(s.getScreenResolution())).append(",")     // ← NEW
-              .append(safe(s.getDevicePixelRatio())).append(",")    // ← NEW
-              .append(safe(s.getNetworkLatencyMs())).append(",")    // ← NEW
+              .append(csv(s.getDeviceOs())).append(",")              //device
+              .append(csv(s.getDeviceBrowser())).append(",")        
+              .append(csv(s.getScreenResolution())).append(",")     
+              .append(safe(s.getDevicePixelRatio())).append(",")    
+              .append(safe(s.getNetworkLatencyMs())).append(",")    //network
 
               .append(safe(s.getStraightnessMean())).append(",") // mouse data go
               .append(safe(s.getStraightnessStd())).append(",") //

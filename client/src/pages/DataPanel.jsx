@@ -4,6 +4,7 @@ import {
   clearSessions,
   exportJSON,
   exportCSV,
+  labelOnServer,
 } from "../util/telemetry";
 import { useNavigate } from "react-router-dom";
 
@@ -12,12 +13,18 @@ export default function DataPanel() {
   const [selected, setSelected] = useState(null);
   const navigate = useNavigate();
 
-  const setLabel = (sessionId, label) => {
+  const setLabel = async (sessionId, label) => {
     const updated = sessions.map((s) =>
       s.sessionId === sessionId ? { ...s, label } : s,
     );
     setSessions(updated);
     localStorage.setItem("ratprobe_sessions", JSON.stringify(updated));
+
+    // Sync label to backend using the server-assigned ID stored at sync time
+    const session = sessions.find((s) => s.sessionId === sessionId);
+    if (session?.serverId) {
+      await labelOnServer(session.serverId, label);
+    }
   };
 
   const handleClear = () => {

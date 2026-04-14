@@ -1,8 +1,68 @@
+/**
+ * telemetry.js — session storage, feature extraction, and backend sync.
+ *
+ * Every completed CAPTCHA session is:
+ *   1. Saved to localStorage immediately (works offline)
+ *   2. Features computed client-side (so backend gets pre-computed scalars)
+ *   3. POSTed to /probe/session for permanent server-side storage
+ *   4. Exportable as JSON or CSV for offline ML work
+ *
+ * ⚠️  Update BASE_URL after deploying to Railway.
+ */
+
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 const STORAGE_KEY = "ratprobe_sessions";
 const MAX_LOCAL = 500;
 
-// Feature computation
+// ─── Device & network info ────────────────────────────────────────────────────
+
+/**
+ * Collect device/browser/network metadata available synchronously at
+ * session-save time.  networkLatencyMs is a best-effort ping to the backend;
+ * it falls back to null if the request fails or times out.
+ */
+async function collectDeviceInfo() {
+  const ua = navigator.userAgent;
+
+  // OS detection
+  let deviceOs = "Unknown";
+  if (/Windows NT/.test(ua)) deviceOs = "Windows";
+  else if (/Mac OS X/.test(ua)) deviceOs = "macOS";
+  else if (/Android/.test(ua)) deviceOs = "Android";
+  else if (/iPhone|iPad/.test(ua)) deviceOs = "iOS";
+  else if (/Linux/.test(ua)) deviceOs = "Linux";
+
+  // Browser detection
+  let deviceBrowser = "Unknown";
+  if (/Edg\//.test(ua)) deviceBrowser = "Edge";
+  else if (/OPR\/|Opera/.test(ua)) deviceBrowser = "Opera";
+  else if (/Chrome\//.test(ua)) deviceBrowser = "Chrome";
+  else if (/Safari\//.test(ua)) deviceBrowser = "Safari";
+  else if (/Firefox\//.test(ua)) deviceBrowser = "Firefox";
+
+  const screenResolution = `${window.screen.width}x${window.screen.height}`;
+  const devicePixelRatio = window.devicePixelRatio ?? 1;
+
+  // Ping backend to estimate round-trip latency
+  let networkLatencyMs = null;
+  try {
+    const t0 = performance.now();
+    await fetch(`${BASE_URL}/hello`, { method: "GET", cache: "no-store" });
+    networkLatencyMs = Math.round(performance.now() - t0);
+  } catch {
+    // offline or endpoint unavailable — leave null
+  }
+
+  return {
+    deviceOs,
+    deviceBrowser,
+    screenResolution,
+    devicePixelRatio,
+    networkLatencyMs,
+  };
+}
+
+// ─── Feature computation ──────────────────────────────────────────────────────
 
 function mean(arr) {
   return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
@@ -13,47 +73,6 @@ function std(arr) {
   return Math.sqrt(arr.reduce((s, v) => s + (v - m) ** 2, 0) / arr.length);
 }
 
-// Device info
-function detectDevice() {
-  const userAgent = navigator.userAgent;
-  return {
-    os: userAgent.includes("Windows")
-      ? "windows"
-      : userAgent.includes("Mac")
-        ? "macos"
-        : userAgent.includes("Linux")
-          ? "linux"
-          : "unknown",
-    browser:
-      userAgent.includes("Chrome") && !userAgent.includes("Edge")
-        ? "chrome"
-        : userAgent.includes("Safari") && !userAgent.includes("Chrome")
-          ? "safari"
-          : userAgent.includes("Firefox")
-            ? "firefox"
-            : userAgent.includes("Edge")
-              ? "edge"
-              : "unknown",
-    screenWidth: window.screen.width,
-    screenHeight: window.screen.height,
-    devicePixelRatio: window.devicePixelRatio || 1,
-  };
-}
-
-// Network info
-async function measureNetworkLatency() {
-  try {
-    const start = performance.now(); //staright from web
-    await fetch(`${BASE_URL}/probe/stats`, { method: "HEAD" });
-
-    return Math.round(performance.now() - start);
-  } catch (error) {
-    console.warn("Network latency extraction failed:", error);
-    return null;
-  }
-}
-
-//default interaction feature: Mouse
 function extractSampleFeatures(sample) {
   const traj = sample.trajectory || [];
   if (traj.length < 3) return null;
@@ -131,11 +150,15 @@ export function computeSessionFeatures(captchaSamples) {
   };
 }
 
-//  localStorage
+// ─── localStorage ─────────────────────────────────────────────────────────────
 
-export function saveSession(record) {
+export async function saveSession(record) {
+  // Collect device/network info and attach it to the record before saving
+  const deviceInfo = await collectDeviceInfo();
+  const enriched = { ...record, ...deviceInfo };
+
   const existing = loadSessions();
-  const updated = [...existing, record].slice(-MAX_LOCAL);
+  const updated = [...existing, enriched].slice(-MAX_LOCAL);
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   } catch {
@@ -144,10 +167,10 @@ export function saveSession(record) {
       JSON.stringify(updated.slice(-MAX_LOCAL / 2)),
     );
   }
-  syncToBackend(record).catch((e) =>
+  syncToBackend(enriched).catch((e) =>
     console.warn("[Telemetry] Backend sync queued (offline?):", e.message),
   );
-  return record;
+  return enriched;
 }
 
 export function loadSessions() {
@@ -165,13 +188,10 @@ export function sessionCount() {
   return loadSessions().length;
 }
 
-// Backend sync
+// ─── Backend sync ─────────────────────────────────────────────────────────────
 
 async function syncToBackend(record) {
   const features = computeSessionFeatures(record.captchaProbe?.samples);
-  const device = detectDevice();
-  const networkLatency = await measureNetworkLatency();
-
   const payload = {
     username: record.username ?? "",
     combinedScore: record.combinedScore ?? 0,
@@ -179,12 +199,13 @@ async function syncToBackend(record) {
     captchaScore: record.captchaProbe?.score ?? 0,
     flags: (record.allFlags || []).join(","),
     sessionJson: JSON.stringify(record.captchaProbe?.samples ?? []),
+    // Device & network fields (populated by collectDeviceInfo in saveSession)
+    deviceOs: record.deviceOs ?? null,
+    deviceBrowser: record.deviceBrowser ?? null,
+    screenResolution: record.screenResolution ?? null,
+    devicePixelRatio: record.devicePixelRatio ?? null,
+    networkLatencyMs: record.networkLatencyMs ?? null,
     ...features,
-    deviceOs: device.os,
-    deviceBrowser: device.browser,
-    screenResolution: `${device.screenWidth}x${device.screenHeight}`,
-    devicePixelRatio: device.devicePixelRatio,
-    networkLatencyMs: networkLatency,
   };
   const res = await fetch(`${BASE_URL}/probe/session`, {
     method: "POST",
@@ -194,7 +215,7 @@ async function syncToBackend(record) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
 
-  // Store server ID for labelling !!!
+  // Store server ID for labelling
   const sessions = loadSessions();
   const idx = sessions.findIndex((s) => s.sessionId === record.sessionId);
   if (idx >= 0) {
@@ -218,7 +239,7 @@ export function downloadServerCSV(labelledOnly = true) {
   window.open(`${BASE_URL}${ep}`, "_blank");
 }
 
-// Local export
+// ─── Local export ─────────────────────────────────────────────────────────────
 
 export function exportJSON(sessions) {
   const data = sessions || loadSessions();
@@ -243,6 +264,13 @@ export function exportCSV(sessions) {
     "combinedScore",
     "ambientScore",
     "captchaScore",
+    // Device & network
+    "deviceOs",
+    "deviceBrowser",
+    "screenResolution",
+    "devicePixelRatio",
+    "networkLatencyMs",
+    // Mouse features
     "straightnessMean",
     "straightnessStd",
     "dirEntropyMean",
@@ -272,6 +300,13 @@ export function exportCSV(sessions) {
         s.combinedScore ?? "",
         s.ambientProbe?.score ?? "",
         s.captchaProbe?.score ?? "",
+        // Device & network — stored directly on the record by saveSession
+        q(s.deviceOs ?? ""),
+        q(s.deviceBrowser ?? ""),
+        q(s.screenResolution ?? ""),
+        s.devicePixelRatio ?? "",
+        s.networkLatencyMs ?? "",
+        // Mouse features
         f.straightnessMean ?? "",
         f.straightnessStd ?? "",
         f.dirEntropyMean ?? "",
