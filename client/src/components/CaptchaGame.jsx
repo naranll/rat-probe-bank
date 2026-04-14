@@ -216,7 +216,7 @@ export default function CaptchaGame({ onComplete, onCancel }) {
     [phase, progress, targets, attempts, onComplete],
   );
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  //  Render
 
   if (phase === "intro") {
     return (
@@ -232,6 +232,9 @@ export default function CaptchaGame({ onComplete, onCancel }) {
           Click the icons shown below in the correct order to confirm you are
           the account holder. Your interaction pattern is recorded as part of
           session security.
+        </p>
+        <p style={s.body}>
+          按正确顺序点击下方所示图标，以确认您是账户持有人。您的操作轨迹将被记录，作为会话安全验证的一部分。
         </p>
         <button style={s.primaryBtn} onClick={startGame}>
           Begin check →
@@ -331,7 +334,6 @@ export default function CaptchaGame({ onComplete, onCancel }) {
               : "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        {/* Background grid lines for depth */}
         <svg
           style={s.bgSvg}
           viewBox={`0 0 ${SCENE_W} ${SCENE_H}`}

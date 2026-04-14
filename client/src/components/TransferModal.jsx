@@ -33,7 +33,7 @@ export default function TransferModal({
       setToUser("");
       setAmount("");
       setError("");
-      setRatResult(null);
+      setRatResult(null); // temp until detector is working
       setPendingSession(null);
       reset();
     }
@@ -67,7 +67,7 @@ export default function TransferModal({
       username,
       transferTo: toUser,
       transferAmount: parseFloat(amount),
-      label: null, // set manually during ground-truth labelling
+      label: null, // set manually during labelling
       ambientProbe: {
         score: ambientProbe.score,
         flags: ambientProbe.flags,
