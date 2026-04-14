@@ -15,12 +15,16 @@ import java.util.Map;
  * ProbeController — stores and exports behavioral CAPTCHA session data.
  *
  * Endpoints:
- *   POST /probe/session          — save one session from frontend
- *   PATCH /probe/session/{id}/label — label a session as human/rat
- *   GET  /probe/sessions          — list all sessions (JSON)
- *   GET  /probe/export/csv        — download all labelled sessions as CSV
- *   GET  /probe/export/full-csv   — download ALL sessions (labelled + unlabelled)
- *   GET  /probe/stats             — counts by label
+ *   POST /probe/session                — save one session from frontend
+ *   PATCH /probe/session/{id}/label    — label a session as human/rat
+ *   PUT /probe/session/{id}/label      — label a session (alternative method)
+ *   POST /probe/sessions/bulk-label    — label multiple sessions at once
+ *   GET  /probe/sessions               — list all sessions (JSON), optional ?username=X
+ *   GET  /probe/sessions/label/{label} — list sessions by label (human/rat/all)
+ *   GET  /probe/export/csv             — download all labelled sessions as CSV
+ *   GET  /probe/export/csv/user        — download sessions for specific user as CSV
+ *   GET  /probe/export/full-csv        — download ALL sessions (labelled + unlabelled)
+ *   GET  /probe/stats                  — counts by label
  */
 @RestController
 @RequestMapping("/probe")
@@ -80,11 +84,76 @@ public class ProbeController {
         return ResponseEntity.ok(Map.of("status", "labelled", "label", body.get("label")));
     }
 
+    // ── Label a session (PUT) ──────────────────────────────────────────────────
+    // NEW: Alternative PUT endpoint for labeling
+
+    @PutMapping("/session/{id}/label")
+    public ResponseEntity<Map<String, String>> labelSession(
+            @PathVariable String id,
+            @RequestBody Map<String, String> body) {
+        ProbeSession s = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Session not found: " + id));
+        s.setLabel(body.get("label")); // "human", "rat", or null
+        repo.save(s);
+        return ResponseEntity.ok(Map.of("status", "labelled", "label", body.get("label"), "id", id));
+    }
+
+    // ── Bulk label sessions ────────────────────────────────────────────────────
+    // NEW: Bulk label endpoint for fast labeling
+
+    @PostMapping("/sessions/bulk-label")
+    public ResponseEntity<Map<String, Object>> bulkLabel(
+            @RequestBody Map<String, Object> body) {
+        
+        @SuppressWarnings("unchecked")
+        List<String> sessionIds = (List<String>) body.get("sessionIds");
+        String label = (String) body.get("label");
+        
+        if (sessionIds == null || label == null) {
+            throw new RuntimeException("Missing sessionIds or label");
+        }
+        
+        int count = 0;
+        for (String id : sessionIds) {
+            var opt = repo.findById(id);
+            if (opt.isPresent()) {
+                ProbeSession s = opt.get();
+                s.setLabel(label);
+                repo.save(s);
+                count++;
+            }
+        }
+        
+        return ResponseEntity.ok(Map.of(
+            "status", "bulk labelled",
+            "count", count,
+            "label", label
+        ));
+    }
+
     // ── List all sessions ─────────────────────────────────────────────────────
+    // MODIFIED: Added optional username parameter to get sessions for specific user
 
     @GetMapping("/sessions")
-    public List<ProbeSession> listAll() {
+    public List<ProbeSession> listAll(
+            @RequestParam(required = false) String username) {
+        
+        if (username != null && !username.isEmpty()) {
+            return repo.findByUsernameOrderByTimestampDesc(username);
+        }
         return repo.findAllByOrderByTimestampDesc();
+    }
+
+    // ── List sessions by label ─────────────────────────────────────────────────
+    // NEW: Filter sessions by label
+
+    @GetMapping("/sessions/label/{label}")
+    public List<ProbeSession> sessionsByLabel(
+            @PathVariable String label) {
+        if ("all".equals(label)) {
+            return repo.findAllByOrderByTimestampDesc();
+        }
+        return repo.findByLabelOrderByTimestampDesc(label);
     }
 
     // ── Stats ─────────────────────────────────────────────────────────────────
@@ -105,6 +174,16 @@ public class ProbeController {
     public ResponseEntity<byte[]> exportCsv() {
         List<ProbeSession> sessions = repo.findByLabelIsNotNull();
         return buildCsv(sessions, "ratprobe_labelled.csv");
+    }
+
+    // ── CSV export (for specific user) ─────────────────────────────────────────
+    // NEW: Export only sessions for a specific user
+
+    @GetMapping("/export/csv/user")
+    public ResponseEntity<byte[]> exportCsvByUser(
+            @RequestParam String username) {
+        List<ProbeSession> sessions = repo.findByUsernameOrderByTimestampDesc(username);
+        return buildCsv(sessions, "ratprobe_" + username + ".csv");
     }
 
     // ── CSV export (all sessions) ─────────────────────────────────────────────
