@@ -4,6 +4,7 @@ D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\ser
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\controller\ProbeController.java
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\controller\TestController.java
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\controller\TransactionController.java
+D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\controller\TrialController.java
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\dto\LoginRequest.java
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\dto\LoginResponse.java
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\dto\SignupRequest.java
@@ -13,9 +14,11 @@ D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\ser
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\model\Account.java
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\model\ProbeSession.java
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\model\Transaction.java
+D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\model\TrialRecord.java
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\model\User.java
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\repository\AccountRepository.java
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\repository\ProbeSessionRepository.java
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\repository\TransactionRepository.java
+D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\repository\TrialRecordRepository.java
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\repository\UserRepository.java
 D:\Documents\2_Uni\.THESIS\rat-probe-bank\server\src\main\java\com\rat_probe\server\ServerApplication.java
