@@ -3,6 +3,10 @@ package com.rat_probe.server.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * TrialRecord — one row per individual trial of the active-challenge game.
+ * Updated to include all §22.12 features plus fixes from analysis sessions.
+ */
 @Entity
 @Table(
     name = "trial_record",
@@ -97,10 +101,14 @@ public class TrialRecord {
     private Integer networkLatencyMs;
 
     // ── Raw logs ───────────────────────────────────────────────────────────
-    @Lob @Column(columnDefinition = "TEXT")
+    // NOTE: @Lob is intentionally NOT used here.
+    // On PostgreSQL, @Lob String maps to OID (large object) which requires
+    // a special LOB locator and breaks Jackson serialisation on GET requests.
+    // Plain @Column(columnDefinition="TEXT") works correctly on both H2 and PostgreSQL.
+    @Column(columnDefinition = "TEXT")
     private String frameLogsJson;
 
-    @Lob @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String clickLogsJson;
 
     public TrialRecord() { this.timestamp = LocalDateTime.now(); }
@@ -228,10 +236,9 @@ public class TrialRecord {
     public Double getHeadingVariance()                 { return headingVariance; }
     public void   setHeadingVariance(Double v)         { this.headingVariance = v; }
 
-    // ── §22.12 D — Oscillation (new features) ─────────────────────────────
     public Double getFrameIntervalJitterMs()           { return frameIntervalJitterMs; }
     public void   setFrameIntervalJitterMs(Double v)   { this.frameIntervalJitterMs = v; }
- 
+
     public Double getClickIntervalJitterMs()           { return clickIntervalJitterMs; }
     public void   setClickIntervalJitterMs(Double v)   { this.clickIntervalJitterMs = v; }
 
